@@ -3,9 +3,18 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 
 
+
+const cookiesOptions = {
+    httpOnly : true,
+    secure : true,
+    sameSite : 'strict' ,
+    maxAge : 24 * 60 * 60 * 1000
+}
+
+
 exports.register = async (req,res)=>{
-    const {email,password} = req.body;
-    if(!email || !password){
+    const {name, email,password} = req.body;
+    if(!name ||!email || !password){
         return res.status(400).json({
             message  : "Email and password is required"
         })
@@ -18,9 +27,22 @@ exports.register = async (req,res)=>{
     }
     const hashPassword = await bcrypt.hash(password,10);
 
-    const user = await User.create({ email , password:hashPassword });
-    res.status(201).json({
-        message : "User registered successfully"
+    const user = await User.create({ name , email , password:hashPassword });
+    const token = jwt.sign(
+        {userId : user._id},
+        process.env.JWT_SECRET,
+        {expiresIn : '1d'}
+    )
+    res.status(201)
+    .cookie('token',token,cookiesOptions)
+    .json({
+        message : "User registered successfully",
+        success: true,
+        user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+        }
     })
 }
 
@@ -52,18 +74,26 @@ exports.login = async (req,res)=>{
         process.env.JWT_SECRET ,
         {expiresIn : "1d"},
     )
-    res.cookie("token",token,
-        {
-            httpOnly : true,
-            secure : true,
-            sameSite : none,
-            maxAge : 24 * 60 * 60 * 1000
-        }
-    )
+    res.cookie("token",token,cookiesOptions)
 
     res.status(200).json({
-        message : "User Login sucessfully"
+        message : "User Login sucessfully",
+        success : true,
+        user : {
+            id : user._id,
+            name : user.name,
+            email : user.email
+        }
     })
 
 }
 
+
+exports.logout = async(req,res)=>{
+    res.clearCookie('token')
+    .status(200)
+    .json({
+        success : true,
+        message : "Logged out"
+    })
+}

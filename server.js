@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require('dotenv')
 const connectDB = require('./config/db');
 const cookieParser = require('cookie-parser') 
-const userRoute = require('./routes/user.route');
+const authRoute = require('./routes/auth.route');
 // const postRoute = require('./routes/post.route');
 
 
@@ -19,7 +19,7 @@ app.use(express.json());
 
 
 
-app.use("/user",userRoute);
+app.use("/auth",authRoute);
 // app.use("/post",postRoute);
 
 
