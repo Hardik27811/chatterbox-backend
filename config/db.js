@@ -5,7 +5,7 @@ const connectDB = async ()=>{
         await  mongoose.connect( process.env.MONGO_URI,{
             dbName : 'chatterbox'
     });
-    console.log(`mongodb connected sucessfully`);
+    console.log(`mongodb connected successfully`);
     
     } catch (error) {
         console.error(error.message);
