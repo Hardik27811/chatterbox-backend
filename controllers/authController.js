@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const sendEmail = require('../utility/sendEmail')
+
 
 
 
@@ -36,11 +38,89 @@ exports.forgotPassword = async(req,res)=>{
         user.resetPasswordToken = resetPasswordToken;
         user.resetPasswordExpire = Date.now() + 20*60*1000;
 
-        await user.save();
+        await user.save({validateBeforeSave : false});
+
+        //creating reset url 
+        const resetURL =`http://localhost:5173/resetpassword/${resetToken}`;
+        const message = `
+        You requested a password reset.
+
+        Please click the link below to reset your password:
+        ${resetURL}
+        This link will expire in 20 minutes.
+
+        If you did not request this, please ignore this email.
+        `;
+
+        await sendEmail({
+            to : user.email,
+            subject : 'Password Reset Request',
+            text : message
+        })
+
+        //senfing res
+        res.status(200).json({
+            sucess : true,
+            message : 'Password reset link generated',
+            // resetURL
+        })
         
 
     } catch (error) {
-        
+        res.status(500).json({
+        success: false,
+        message: error.message
+        });
+    }
+}
+
+exports.resetPassword = async (req,res)=>{
+    try {
+        const {password } = req.body;
+        const {resetToken} = req.params;
+        if(!password){
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a new password'
+            })
+        }
+
+        const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire : {$gt : Date.now()}
+        })
+
+        if(!user){
+            return res.status(400).json({
+                 success: false,
+                message: 'Invalid or expired token'
+            })
+        }
+
+        user.password = password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        const token = generateToken(user._id);
+        res.json({
+            success : true,
+            token,
+            user :{
+                id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        })
+
+    } catch (error) {
+        res.status(500).json({
+        success: false,
+        message: 'Server error'
+        });
     }
 }
 

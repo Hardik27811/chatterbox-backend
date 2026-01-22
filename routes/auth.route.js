@@ -2,7 +2,7 @@ const express = require("express");
 const userController = require("../controllers/authController");
 const {protect} = require('../middlewares/auth.middleware');
 const {body} = require('express-validator')
-
+const rateLimit = require('express-rate-limit')
 const router = express.Router();
 
 //validation middleware
@@ -18,6 +18,10 @@ const validateLogin = [
     body('password').notEmpty().withMessage('Password is required')
 ]
 
+const forgotPasswordLimiter = rateLimit({
+    windowMs: 15*60*1000,
+    max : 5
+})
 
 
 router.post("/register",  validateRegister , userController.register);
@@ -30,6 +34,10 @@ router.get('/me' , protect , (req,res)=>{
         user : req.user
     })
 })
+
+router.post("/forgotpassword" ,forgotPasswordLimiter, userController.forgotPassword);
+
+router.put('/resetpassword/:resetToken' , userController.resetPassword);
 
 
 
