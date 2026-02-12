@@ -1,22 +1,30 @@
 const express = require('express');
 const postController = require('../controllers/postController');
-const protect = require('../middlewares/auth.middleware')
+const {protect} = require('../middlewares/auth.middleware')
 
 const route = express.Router();
 
-route.post('/', protect, postController.createPost);
+route.post('/add', protect, postController.createPost);
 
-route.get('/', protect , postController.getAllPost);
+route.get('/getAll', protect , postController.getAllPost);
 
-route.get('/me', protect , postController.getMyPosts);
+route.get('/getMyPosts', protect , postController.getMyPosts);
 
-route.get('/:id' , protect , postController);
+route.get('/:postId' , protect , postController.getPostById);
 
-route.put('/:id' , protect , postController.updatePost);
+route.put('/:postId/updatePost' , protect , postController.updatePost);
 
-route.delete('/:id' , protect , postController.deletePost);
+route.delete('/:postId/deletePost' , protect , postController.deletePost);
 
-route.likeUnlikePost('/:id' , protect , postController.likeUnlikePost);
+route.put('/:postId/likeUnlikePost' , protect , postController.likeUnlikePost);
 
+route.post('/:postId/addComment', protect , postController.addComment);
+
+route.delete('/:postId/deleteComment/:commentId', protect , postController.deleteComment);
+
+route.put('/:postId/editComment/:commentId', protect , postController.editComment);
+
+
+//2728861539
 
 module.exports = route;
