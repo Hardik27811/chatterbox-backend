@@ -6,9 +6,11 @@ const initSocket = (server) => {
         cors: {
             origin: process.env.CLIENT_URL,
             methods: ["GET", "POST"],
-            credentials: true
+            credentials: true,
+            allowedHeaders: ["my-custom-header"],
         },
-        transports: ['websocket', 'polling'] // Force these for Render compatibility
+        transports: ['websocket', 'polling'], // Force these for Render compatibility
+        
     });
 
     io.on("connection", (socket) => {
