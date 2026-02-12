@@ -39,7 +39,7 @@ app.use('/api/chat/',chatRoute)
 
 connectDB();
 
-app.listen(PORT,()=>{
+server.listen(PORT,()=>{
     console.log(`Server is runing on,${PORT}`); //3000
     
 })
