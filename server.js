@@ -24,7 +24,7 @@ app.set("io",io) // Still makes io available in routes
 
 //middleware
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials : true
 }))
 app.use(cookieParser())
